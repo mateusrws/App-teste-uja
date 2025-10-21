@@ -1,0 +1,9 @@
+model Congregacao {
+    id String @id @default(uuid())
+    address String
+    city String 
+    state String
+    name String
+
+    member User[] @relation("CongMembers")
+}

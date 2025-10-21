@@ -1,0 +1,25 @@
+model Event {
+    id                  String     @id @default(uuid())
+    title               String
+    description         String?
+    slug                String     @unique
+    maximumParticipants Int?       @map("maximum_participants")
+    date                DateTime
+    hour                String
+    points              Int
+    image               String?
+    address             String
+    city                String
+    preco               Float?
+    state               String?
+    organizerId         String?
+    user                User?      @relation("UserEvents", fields: [organizerId], references: [id])
+    ingressos           Ingresso[] @relation("IngressosEvents")
+
+    createdAt DateTime @default(now())
+    isActive  Boolean  @default(true)
+
+    @@map("events")
+}
+
+// O evento terá um titulo para fácil identificação, uma descrição opcional, um slug para uma URL amigável, um numero máximo de participantes para eventos como acampamento que devem ser limitados o numero de pessoas, uma data e hora, pontos para a participação no evento, uma imagem opcional como capa do evento, um endereço, cidade e estado.

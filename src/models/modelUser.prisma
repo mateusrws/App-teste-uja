@@ -1,0 +1,23 @@
+model User {
+    id             String   @id @default(uuid())
+    name           String
+    descpription   String?
+    dateBorn       DateTime
+    cpf            String   @unique
+    rg             String   @unique
+    cpfResponsavel String   @unique @map("cpf_resp")
+    rgResponsavel  String   @unique @map("rg_resp")
+    address        String
+    city           String
+    state          String
+    lvl            Int
+    email          String   @unique
+    phone          String?
+    profileImage   String?
+    createdAt      DateTime @default(now())
+    congregacaoId  String   @map("congregacao_id")
+
+    events      Event[]     @relation("UserEvents")
+    ingressos   Ingresso[]  @relation("IngressosUsers")
+    congregacao Congregacao @relation("CongMembers", fields: [congregacaoId], references: [id])
+}

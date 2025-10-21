@@ -1,0 +1,9 @@
+model Ingresso {
+    id      String @id @default(uuid())
+    price   Float
+    eventId String
+    userId  String
+
+    event Event @relation("IngressosEvents", fields: [eventId], references: [id])
+    user  User  @relation("IngressosUsers", fields: [userId], references: [id])
+}
