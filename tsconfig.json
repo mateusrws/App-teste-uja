@@ -12,8 +12,8 @@
     "declarationMap": true,
     "skipLibCheck": true,
     "moduleDetection": "force",
-    "types": ["node"]
+    "types": ["node", "jest"]
   },
-  "include": ["src/**/*"],
+  "include": ["src/**/*", "src/knex.ts"],
   "exclude": ["node_modules"]
 }

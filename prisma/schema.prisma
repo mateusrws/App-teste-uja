@@ -10,7 +10,7 @@ generator client {
 }  
 
 datasource db {
-  provider = "sqlite"
+  provider = "postgresql"
   url      = env("DATABASE_URL")
 }
 
@@ -34,6 +34,7 @@ model User {
     profileImage   String?
     createdAt      DateTime @default(now())
     congregacaoId  String   @map("congregacao_id")
+    points         Int      @default(0)
 
     events      Event[]     @relation("UserEvents")
     ingressos   Ingresso[]  @relation("IngressosUsers")

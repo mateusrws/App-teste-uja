@@ -9,7 +9,12 @@ type Event = {
     address: string;
     city: string;
     state?: string;
-    preco?: number;
+    preco: number;
+    slug?: string;
+    organizerId?: string;
+    createdAt?: Date;
+    isActive?: boolean;
+    ingressos?: unknown[];
 }
 
 export default Event;

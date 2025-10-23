@@ -2,6 +2,7 @@ import express from 'express';
 import dotenv from 'dotenv';
 import cors from 'cors';
 import routes from '../routes';
+import { testConnection } from '../knex'
 
 dotenv.config();
 
@@ -16,5 +17,6 @@ app.use(routes);
 const PORT = process.env.PORT || 2000;
 
 app.listen(PORT, () => {
+  testConnection()
   console.log(`🚀 Servidor rodando em http://localhost:${PORT}/`);
 });
