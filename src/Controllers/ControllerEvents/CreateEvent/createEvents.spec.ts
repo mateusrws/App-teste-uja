@@ -1,179 +1,111 @@
-import { beforeEach, expect, it, vitest } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import { createEvent } from "./CreateEvents";
-import { describe } from "node:test";
-import { create } from "domain";
-import { addAbortListener } from "events";
 
-// Mock do knex
-vitest.mock("../../../knex", () => ({
-    default: {
-        raw: vitest.fn().mockReturnValue("mock-uuid"),
-        insert: vitest.fn().mockReturnThis(),
-        into: vitest.fn().mockResolvedValue(undefined)
-    }
+
+vi.mock("../../../prisma", () => ({
+  default: {
+    event: {
+      create: vi.fn().mockResolvedValue({
+        id: "mock-uuid",
+        title: "Test Event",
+        description: "Test Description",
+        slug: "test-event",
+        date: new Date("2024-01-01"),
+        hour: "10:00",
+        points: 100,
+        address: "Test Address",
+        city: "Test City",
+        preco: 34.0,
+      }),
+    },
+  },
 }));
 
-describe('CreateEvent controller',  () => {
-    let req: any;
-    let res: any;
+describe("CreateEvent controller", () => {
+  let req: any;
+  let res: any;
 
-    beforeEach(() => {
-        req = { 
-            body: {
-                title: "Test Event",
-                description: "Test Description",
-                slug: "test-event",
-                date: "2024-01-01",
-                hour: "10:00",
-                points: 100,
-                address: "Test Address",
-                city: "Test City"
-            }
-        }
-        res = { 
-            status: vitest.fn().mockReturnThis(), 
-            json: vitest.fn(),
-            send: vitest.fn()
-        }
-    })
+  beforeEach(() => {
+    req = {
+      body: {
+        title: "Test Event",
+        description: "Test Description",
+        slug: "test-event",
+        date: "2024-01-01",
+        hour: "10:00",
+        points: 100,
+        address: "Test Address",
+        city: "Test City",
+        preco: 34.0,
+      },
+    };
 
-    it('Should create Event sucefully', async () => {
-        await createEvent(req, res);
+    res = {
+      status: vi.fn().mockReturnThis(),
+      json: vi.fn(),
+      send: vi.fn(),
+    };
+  });
 
-        expect(res.status).toHaveBeenCalledWith(201)
-        expect(res.json).toHaveBeenCalledWith({
-            message: 'Evento criado com sucesso',
-            status: 201
-        })
+  it("Should create Event successfully", async () => {
+    await createEvent(req, res);
+
+    expect(res.status).toHaveBeenCalledWith(201);
+    expect(res.json).toHaveBeenCalledWith({
+      message: "Evento criado com sucesso",
+      status: 201,
     });
+  });
 
-    it('Should handle missing fields', async () =>{
-        req.body = {};
+  it("Should handle missing or invalid fields (ZodError)", async () => {
+    req.body = {}; 
 
-        await createEvent(req,res);
+    await createEvent(req, res);
 
-        expect(res.status).toHaveBeenCalledWith(400)
-        expect(res.json).toHaveBeenCalledWith({
-            message: "Campos obrigatórios não foram preenchidos!"
-        })
-    });
+    expect(res.status).toHaveBeenCalledWith(400);
+    expect(res.json).toHaveBeenCalledWith(
+      expect.objectContaining({
+        message: "Erro de validação nos campos",
+        issues: expect.any(Array),
+      })
+    );
+  });
 
-    it('Should handle database error', async ()=>{
-        const db = await import( '../../../knex');
-        const mockError = new Error("Failed Database connection");
-        db.default.insert = vitest.fn().mockReturnThis();
-        db.default.into = vitest.fn().mockRejectedValue(mockError)
+  it("Should handle database error", async () => {
+    const prisma = await import("../../../prisma");
+    const mockError = new Error("Failed Database connection");
 
-        await createEvent(req, res);
+    (prisma.default.event.create as any) = vi
+      .fn()
+      .mockRejectedValue(mockError);
 
-        expect(res.status).toHaveBeenCalledWith(400)
-        expect(res.send).toHaveBeenCalledWith(mockError)
-    });
+    await createEvent(req, res);
 
-    it('Should handle error types of fields', async () => {
-        req = {
-            body: {
-                title: 12323,
-                description: 21323,
-                slug: "test-event",
-                date: "masdsd",
-                hour: "arroz",
-                points: "100",
-                address: 432,
-                city: 32
-            }
-        }
-    })
-})
+    expect(res.status).toHaveBeenCalledWith(400);
+    expect(res.send).toHaveBeenCalledWith(mockError);
+  });
 
-/*
-// CÓDIGO CORRETO PARA REFERÊNCIA:
+  it("Should handle invalid field types", async () => {
+    req.body = {
+      title: 123,
+      description: 321,
+      slug: "test-event",
+      date: "not-a-date",
+      hour: 123,
+      points: "cem",
+      address: 123,
+      city: 123,
+      preco: "dois",
+    };
 
-import { beforeEach, expect, it, vitest } from "vitest";
-import { createEvent } from "./CreateEvents";
-import { describe } from "node:test";
+    await createEvent(req, res);
 
-// Mock do knex
-vitest.mock("../../../knex", () => ({
-    default: {
-        raw: vitest.fn().mockReturnValue("mock-uuid"),
-        insert: vitest.fn().mockReturnThis(),
-        into: vitest.fn().mockResolvedValue(undefined)
-    }
-}));
-
-describe('CreateEvent controller',  () => {
-    let req: any;
-    let res: any;
-
-    beforeEach(() => {
-        req = { 
-            body: {
-                title: "Test Event",
-                description: "Test Description",
-                slug: "test-event",
-                date: "2024-01-01",
-                hour: "10:00",
-                points: 100,
-                address: "Test Address",
-                city: "Test City"
-            }
-        }
-        res = { 
-            status: vitest.fn().mockReturnThis(), 
-            json: vitest.fn(),
-            send: vitest.fn()
-        }
-    })
-
-    it('Should create event successfully', async () => {
-        await createEvent(req, res);
-        
-        expect(res.status).toHaveBeenCalledWith(201);
-        expect(res.json).toHaveBeenCalledWith({
-            message: 'Evento criado com sucesso',
-            status: 201,
-            event: req.body
-        });
-    })
-
-    it('Should handle database error', async () => {
-        const db = await import("../../../knex");
-        const mockError = new Error("Database connection failed");
-        db.default.insert = vitest.fn().mockReturnThis();
-        db.default.into = vitest.fn().mockRejectedValue(mockError);
-
-        await createEvent(req, res);
-        
-        expect(res.status).toHaveBeenCalledWith(400);
-        expect(res.send).toHaveBeenCalledWith(mockError);
-    })
-
-    it('Should handle missing required fields', async () => {
-        req.body = {}; // Empty body
-        
-        await createEvent(req, res);
-        
-        expect(res.status).toHaveBeenCalledWith(400);
-        expect(res.send).toHaveBeenCalled();
-    })
-
-    it('Should handle invalid data types', async () => {
-        req.body = {
-            title: 123, // Should be string
-            description: null,
-            slug: undefined,
-            date: "invalid-date",
-            hour: 123, // Should be string
-            points: "not-a-number", // Should be number
-            address: [],
-            city: {}
-        };
-        
-        await createEvent(req, res);
-        
-        expect(res.status).toHaveBeenCalledWith(400);
-        expect(res.send).toHaveBeenCalled();
-    })
-})
-*/
+    expect(res.status).toHaveBeenCalledWith(400);
+    expect(res.json).toHaveBeenCalledWith(
+      expect.objectContaining({
+        message: "Erro de validação nos campos",
+        issues: expect.any(Array),
+      })
+    );
+  });
+});

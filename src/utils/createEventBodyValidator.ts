@@ -1,14 +1,20 @@
-import Event from "../types/typeEnvent";
+import z from "zod";
 
 
-export function createBodyValidation(body: Event){
-    if (!body.title ||!body.date ||!body.hour ||body.points === undefined ||!body.address ||!body.city || !body.preco) {
-        return "Campos obrigatórios não foram preenchidos!";
-    }
 
-    if(typeof(body.title) !== "string" || typeof(body.date) !== "string" || isNaN(Date.parse(body.date)) || typeof(body.hour) !== "string" || typeof(body.points) === "number" || typeof(body.address) !== "string" || typeof(body.city) !== "string" || typeof(body.preco) !== "number"){
-        return "Os campos estão com seus tipos diferentes do esperado ex: preco == 'Bom dia'"
-    }
 
-    return true;
-}
+export const createEventSchema = z.object({
+    title: z.string().min(4),
+    description: z.string().max(255).nullable().default(''),
+    date: z.date(),
+    hour: z.string().time(),
+    points: z.number().int().positive().default(0),
+    image: z.string().url().nullable(),
+    maximumParticipants: z.number().int().positive().default(0),
+    address: z.string(),
+    city: z.string(),
+    state: z.string().nullable(),
+    preco: z.number().positive(),
+    slug: z.string().nullable(),
+    organizerId: z.string()
+})

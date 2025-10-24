@@ -11,7 +11,7 @@ type Event = {
     state?: string;
     preco: number;
     slug?: string;
-    organizerId?: string;
+    organizerId: string;
     createdAt?: Date;
     isActive?: boolean;
     ingressos?: unknown[];

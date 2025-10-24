@@ -1,47 +1,60 @@
 import { Request, Response } from "express";
-import Event from "../../../types/typeEnvent";
-import db from "../../../knex";
-import { createBodyValidation } from "../../../utils/createEventBodyValidator";
+import prisma from "../../../prisma";
+import { z } from "zod";
 
+// ✅ Schema de validação Zod
+export const createEventSchema = z.object({
+  title: z.string(),
+  description: z.string().optional(),
+  slug: z.string(),
+  date: z.string(),
+  hour: z.string(),
+  points: z.number(),
+  address: z.string(),
+  city: z.string(),
+  preco: z.number(),
+  maximumParticipants: z.number().optional(),
+  organizerId: z.string().optional(),
+});
 
 export const createEvent = async (req: Request, res: Response) => {
-        try {
-            const event: Event = req.body;
+  try {
+    const event = req.body;
 
-            // Validando dados
-
-            const validator = createBodyValidation(event);
-
-            if(validator == "Campos obrigatórios não foram preenchidos!"){
-                res.status(400).json({
-                    message: "Campos obrigatórios não foram preenchidos!"
-                })
-            }
-            
-            // Remove campos que são gerados automaticamente
-            const { createdAt, isActive, ingressos, ...eventData } = event;
-            
-            // Mapear campos para os nomes corretos do banco
-            const mappedData = {
-                id: db.raw('gen_random_uuid()'),
-                title: eventData.title,
-                description: eventData.description,
-                slug: eventData.slug,
-                date: eventData.date,
-                hour: eventData.hour,
-                points: eventData.points,
-                address: eventData.address,
-                city: eventData.city
-            };
-
-            await db.insert(mappedData).into('events');
-
-            
-            res.status(201).json({
-                message: 'Evento criado com sucesso',
-                status: 201
-            });
-        } catch (error) {
-            res.status(400).send(error);
-        }   
+    // 🧠 Validação com Zod
+    try {
+      createEventSchema.parse(event);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({
+          message: "Erro de validação nos campos",
+          issues: error.issues, // mostra onde deu erro
+        });
+      }
     }
+
+    // 💾 Criação no banco (mockado no teste)
+    await prisma.event.create({
+      data: {
+        title: event.title,
+        description: event.description,
+        slug: event.slug,
+        date: new Date(event.date),
+        hour: event.hour,
+        points: event.points,
+        address: event.address,
+        city: event.city,
+        preco: event.preco,
+        maximumParticipants: event.maximumParticipants,
+        organizerId: event.organizerId,
+      },
+    });
+
+    return res.status(201).json({
+      message: "Evento criado com sucesso",
+      status: 201,
+    });
+  } catch (error) {
+    return res.status(400).send(error);
+  }
+};

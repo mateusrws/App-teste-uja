@@ -1,15 +1,16 @@
 import { Router} from 'express';
 import ControllerRotas from './Controllers/ControllerRotas';
 import { createEvent } from './Controllers/ControllerEvents/CreateEvent/CreateEvents';
-import { getEvents, getEventsBySlug } from './Controllers/ControllerEvents/GetEvents';
-import { createBodyValidator } from './utils/createEventBodyValidator';
+import { getEvents, getEventsBySlug } from './Controllers/ControllerEvents/GetEvent/GetEvents';
+import { putEvent } from './Controllers/ControllerEvents/PutEvent/PutEvents';
 
 const router = Router();
 
 router.get('/', ControllerRotas.raiz);
 
-router.post('/events', createBodyValidator, createEvent)
-router.get('/events', getEvents)
-router.get('/events/:slug', getEventsBySlug)
+router.post('/events', createEvent);
+router.get('/events', getEvents);
+router.get('/events/:slug', getEventsBySlug);
+router.put('/events', putEvent)
 
 export default router;
