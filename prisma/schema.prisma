@@ -7,7 +7,7 @@
 generator client {
   provider = "prisma-client-js"
   output   = "../src/generated/prisma"
-}  
+}
 
 datasource db {
   provider = "postgresql"
@@ -17,78 +17,76 @@ datasource db {
 // Model User
 
 model User {
-    id             String   @id @default(uuid())
-    name           String
-    descpription   String?
-    dateBorn       DateTime
-    cpf            String   @unique
-    rg             String   @unique
-    cpfResponsavel String   @unique @map("cpf_resp")
-    rgResponsavel  String   @unique @map("rg_resp")
-    address        String
-    city           String
-    state          String
-    lvl            Int
-    email          String   @unique
-    phone          String?
-    profileImage   String?
-    createdAt      DateTime @default(now())
-    congregacaoId  String   @map("congregacao_id")
-    points         Int      @default(0)
+  id             String   @id @default(uuid())
+  name           String
+  description    String?
+  dateBorn       DateTime
+  cpf            String   @unique
+  rg             String   @unique
+  cpfResponsavel String   @unique @map("cpf_resp")
+  rgResponsavel  String   @unique @map("rg_resp")
+  address        String
+  city           String
+  state          String
+  lvl            Int
+  email          String   @unique
+  phone          String?
+  profileImage   String?
+  createdAt      DateTime @default(now())
+  congregacaoId  String   @map("congregacao_id")
+  points         Int      @default(0)
 
-    events      Event[]     @relation("UserEvents")
-    ingressos   Ingresso[]  @relation("IngressosUsers")
-    congregacao Congregacao @relation("CongMembers", fields: [congregacaoId], references: [id])
+  events      Event[]     @relation("UserEvents")
+  ingressos   Ingresso[]  @relation("IngressosUsers")
+  congregacao Congregacao @relation("CongMembers", fields: [congregacaoId], references: [id])
 }
-
 
 // Model Congregação 
 
 model Congregacao {
-    id String @id @default(uuid())
-    address String
-    city String 
-    state String
-    name String
+  id      String @id @default(uuid())
+  address String
+  city    String
+  state   String
+  name    String
 
-    member User[] @relation("CongMembers")
+  member User[] @relation("CongMembers")
 }
-
 
 // Model Ingresso
 
 model Ingresso {
-    id      String @id @default(uuid())
-    price   Float
-    eventId String
-    userId  String
+  id      String @id @default(uuid())
+  price   Float
+  eventId String
+  userId  String
 
-    event Event @relation("IngressosEvents", fields: [eventId], references: [id])
-    user  User  @relation("IngressosUsers", fields: [userId], references: [id])
+  event Event @relation("IngressosEvents", fields: [eventId], references: [id])
+  user  User  @relation("IngressosUsers", fields: [userId], references: [id])
 }
 
 // Model evento
 
 model Event {
-    id                  String     @id @default(uuid())
-    title               String
-    description         String?
-    slug                String     @unique
-    maximumParticipants Int?       @map("maximum_participants")
-    date                DateTime
-    hour                String
-    points              Int
-    image               String?
-    address             String
-    city                String
-    preco               Float?
-    state               String?
-    organizerId         String?
-    user                User?      @relation("UserEvents", fields: [organizerId], references: [id])
-    ingressos           Ingresso[] @relation("IngressosEvents")
+  id                  String     @id @default(uuid())
+  title               String
+  description         String?
+  slug                String     @unique
+  maximumParticipants Int?       @map("maximum_participants")
+  date                DateTime
+  hour                String
+  points              Int
+  image               String?
+  address             String
+  city                String
+  preco               Float?
+  state               String?
+  organizerId         String?
+  user                User?      @relation("UserEvents", fields: [organizerId], references: [id])
+  ingressos           Ingresso[] @relation("IngressosEvents")
 
-    createdAt DateTime @default(now())
-    isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  isActive  Boolean  @default(true)
 
-    @@map("events")
+  @@map("events")
 }

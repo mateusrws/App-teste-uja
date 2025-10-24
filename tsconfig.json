@@ -12,7 +12,7 @@
     "declarationMap": true,
     "skipLibCheck": true,
     "moduleDetection": "force",
-    "types": ["node", "jest"]
+    "types": ["node"]
   },
   "include": ["src/**/*", "src/knex.ts"],
   "exclude": ["node_modules"]

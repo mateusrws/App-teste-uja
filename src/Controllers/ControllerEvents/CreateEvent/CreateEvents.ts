@@ -21,14 +21,13 @@ export const createEvent = async (req: Request, res: Response) => {
   try {
     const event = req.body;
 
-    // 🧠 Validação com Zod
     try {
       createEventSchema.parse(event);
     } catch (error) {
       if (error instanceof z.ZodError) {
         return res.status(400).json({
           message: "Erro de validação nos campos",
-          issues: error.issues, // mostra onde deu erro
+          issues: error.issues, 
         });
       }
     }
