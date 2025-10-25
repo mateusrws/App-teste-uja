@@ -31,6 +31,7 @@ model User {
   lvl            Int
   email          String   @unique
   phone          String?
+  password       String
   profileImage   String?
   createdAt      DateTime @default(now())
   congregacaoId  String   @map("congregacao_id")
