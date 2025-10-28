@@ -6,6 +6,7 @@ import { putEvent } from './Controllers/ControllerEvents/PutEvent/PutEvents';
 import { deleteEvent } from './Controllers/ControllerEvents/DeleteEvent/deleteEvent';
 import { ensureAuthenticate } from './middleware/EnsureAuthenticate';
 import { Login } from './Controllers/controllerLogin/ControllerLogin';
+import { createUser } from './Controllers/ControllerUser/createUser/createUser';
 
 const router = Router();
 
@@ -19,5 +20,7 @@ router.put('/events', ensureAuthenticate , putEvent)
 router.delete('/events/:slug', ensureAuthenticate , deleteEvent);
 
 router.post('/login', Login);
+
+router.post('/user',createUser)
 
 export default router;

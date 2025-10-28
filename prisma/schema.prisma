@@ -14,35 +14,39 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-// Model User
+enum UserType {
+  COORDENADOR
+  ADOLESCENTE
+}
 
 model User {
-  id             String   @id @default(uuid())
-  name           String
+  id            String   @id @default(uuid())
+  name          String
+  dateBorn      DateTime
+  cpf           String   @unique
+  rg            String   @unique
+  address       String
+  city          String
+  state         String
+  email         String   @unique
+  phone         String   @unique
+  password      String
+  profileImage  String?
+  createdAt     DateTime @default(now())
+  congregacaoId String   @map("congregacao_id")
+  points        Int      @default(0)
+  lvl           Int      @default(0)
+
+  type UserType
+
+  cpfResponsavel String? @unique @map("cpf_resp")
+  rgResponsavel  String? @unique @map("rg_resp")
   description    String?
-  dateBorn       DateTime
-  cpf            String   @unique
-  rg             String   @unique
-  cpfResponsavel String   @unique @map("cpf_resp")
-  rgResponsavel  String   @unique @map("rg_resp")
-  address        String
-  city           String
-  state          String
-  lvl            Int
-  email          String   @unique
-  phone          String?
-  password       String
-  profileImage   String?
-  createdAt      DateTime @default(now())
-  congregacaoId  String   @map("congregacao_id")
-  points         Int      @default(0)
 
   events      Event[]     @relation("UserEvents")
   ingressos   Ingresso[]  @relation("IngressosUsers")
   congregacao Congregacao @relation("CongMembers", fields: [congregacaoId], references: [id])
 }
-
-// Model Congregação 
 
 model Congregacao {
   id      String @id @default(uuid())
@@ -51,10 +55,8 @@ model Congregacao {
   state   String
   name    String
 
-  member User[] @relation("CongMembers")
+  members User[] @relation("CongMembers")
 }
-
-// Model Ingresso
 
 model Ingresso {
   id      String @id @default(uuid())
@@ -65,8 +67,6 @@ model Ingresso {
   event Event @relation("IngressosEvents", fields: [eventId], references: [id])
   user  User  @relation("IngressosUsers", fields: [userId], references: [id])
 }
-
-// Model evento
 
 model Event {
   id                  String     @id @default(uuid())

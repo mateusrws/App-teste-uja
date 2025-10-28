@@ -2,7 +2,6 @@ import { Request, Response } from "express";
 import prisma from "../../../prisma";
 import { z } from "zod";
 
-// ✅ Schema de validação Zod
 export const createEventSchema = z.object({
   title: z.string(),
   description: z.string().optional(),
@@ -32,7 +31,6 @@ export const createEvent = async (req: Request, res: Response) => {
       }
     }
 
-    // 💾 Criação no banco (mockado no teste)
     await prisma.event.create({
       data: {
         title: event.title,
