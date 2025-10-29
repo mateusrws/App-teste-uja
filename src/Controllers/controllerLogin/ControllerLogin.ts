@@ -2,6 +2,8 @@ import { RequestHandler } from "express";
 import prisma from "../../prisma";
 import { User } from "../../generated/prisma";
 import { compare  } from 'bcrypt'
+import { JWTService } from "../../services/JWTService";
+import { StatusCodes } from "http-status-codes";
 
 
 
@@ -26,9 +28,18 @@ export const Login: RequestHandler = async (req, res) => {
         }
 
         if (await compare(password, User.password)) {
+            
+            const accessToken = JWTService.sign({ uid: User.id } )
+
+            if(accessToken == 'JWT_SECRET_NOT_FOUND'){
+                return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+                    message: 'Erro ao gerar token de acesso'
+                })
+            }
+            
             return res.status(200).json({
                 message: "Login realizado com sucesso",
-                user: User
+                accessToken
             });
         } else {
             return res.status(401).json({

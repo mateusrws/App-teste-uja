@@ -7,20 +7,31 @@ import { deleteEvent } from './Controllers/ControllerEvents/DeleteEvent/deleteEv
 import { ensureAuthenticate } from './middleware/EnsureAuthenticate';
 import { Login } from './Controllers/controllerLogin/ControllerLogin';
 import { createUser } from './Controllers/ControllerUser/createUser/createUser';
+import { ensureCoord } from './middleware/EnsureCoord';
+import { ifCreateAdolescente } from './middleware/ifCreateAdolescente';
+import { getUserByEmail, getUsers } from './Controllers/ControllerUser/getUser/getUser';
+import { putUser } from './Controllers/ControllerUser/putUser/putUser';
 
 const router = Router();
 
 router.get('/', ensureAuthenticate , ControllerRotas.raiz);
 
 
-router.post('/events', ensureAuthenticate , createEvent);
+router.post('/events', ensureAuthenticate, ensureCoord, createEvent);
 router.get('/events', ensureAuthenticate , getEvents);
 router.get('/events/:slug', ensureAuthenticate , getEventsBySlug);
-router.put('/events', ensureAuthenticate , putEvent)
-router.delete('/events/:slug', ensureAuthenticate , deleteEvent);
+router.put('/events', ensureAuthenticate, ensureCoord, putEvent)
+router.delete('/events/:slug', ensureAuthenticate, ensureCoord, deleteEvent);
 
 router.post('/login', Login);
 
-router.post('/user',createUser)
+// Alterar a logica para utilizar o uuid do usuario como parâmetro e identificação e adicionar sistema de cache ou cookies
+router.post('/user',ensureCoord, ifCreateAdolescente ,createUser)
+router.get('/user', ensureAuthenticate , getUsers);
+router.get('/user/:slug', ensureAuthenticate , getUserByEmail);
+router.put('/user', ensureAuthenticate, ensureCoord, putUser)
+router.delete('/user', ensureAuthenticate, ensureCoord, )
+
+
 
 export default router;

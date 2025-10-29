@@ -1,53 +1,14 @@
 import { RequestHandler } from "express";
 import { StatusCodes } from "http-status-codes";
-import * as z from "zod";
 import prisma from "../../../prisma";
 import bcrypt from "bcrypt";
+import { createUserSchema } from "../../../utils/createUserSchema";
 
-export const userTypeEnum = z.enum(["ADOLESCENTE", "COORDENADOR"]);
-
-export const baseUserSchema = z.object({
-  name: z.string().min(1),
-  dateBorn: z.coerce.date(),
-  cpf: z.string().min(11).max(14),
-  rg: z.string().min(5),
-  address: z.string(),
-  city: z.string(),
-  state: z.string(),
-  lvl: z.number().min(0).max(1).default(0),
-  email: z.string().email(),
-  phone: z.string(),
-  password: z.string().min(6),
-  profileImage: z.string().nullable().optional(),
-  congregacaoId: z.string().uuid(),
-  points: z.number().int().min(0).default(0),
-  type: userTypeEnum,
-});
-
-export const adolescenteSchema = baseUserSchema.extend({
-  type: z.literal("ADOLESCENTE"),
-  cpfResponsavel: z.string().min(11).max(14),
-  rgResponsavel: z.string().min(5),
-  description: z.string().optional(),
-});
-
-export const coordenadorSchema = baseUserSchema.extend({
-  type: z.literal("COORDENADOR"),
-  cpfResponsavel: z.string().nullable().optional(),
-  rgResponsavel: z.string().nullable().optional(),
-  description: z.string().nullable().optional(),
-});
-
-export const createUserSchema = z.discriminatedUnion("type", [
-  adolescenteSchema,
-  coordenadorSchema,
-]);
 
 export const createUser: RequestHandler = async (req, res) => {
   try {
     console.log("BODY RECEBIDO:", req.body);
 
-    // 🔹 Ajuste de nomes para bater com o schema do Prisma
     const formattedBody = {
       ...req.body,
       congregacaoId: req.body.congregacao_id ?? req.body.congregacaoId,
@@ -65,6 +26,7 @@ export const createUser: RequestHandler = async (req, res) => {
     }
 
     const data = validation.data;
+
 
     // 🔹 Criptografa senha
     const hashedPassword = await bcrypt.hash(data.password, 12);

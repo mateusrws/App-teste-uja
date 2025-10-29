@@ -1,20 +1,7 @@
 import { Request, Response } from "express";
 import prisma from "../../../prisma";
 import { z } from "zod";
-
-export const createEventSchema = z.object({
-  title: z.string(),
-  description: z.string().optional(),
-  slug: z.string(),
-  date: z.string(),
-  hour: z.string(),
-  points: z.number(),
-  address: z.string(),
-  city: z.string(),
-  preco: z.number(),
-  maximumParticipants: z.number().optional(),
-  organizerId: z.string().optional(),
-});
+import { createEventSchema } from "../../../utils/createEventBodyValidator";
 
 export const createEvent = async (req: Request, res: Response) => {
   try {
