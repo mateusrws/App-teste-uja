@@ -3,6 +3,7 @@ import { StatusCodes } from "http-status-codes";
 import prisma from "../../../prisma";
 import bcrypt from "bcrypt";
 import { createUserSchema } from "../../../utils/createUserSchema";
+import { redisCache } from "../../../shared/redisCacheProvider";
 
 
 export const createUser: RequestHandler = async (req, res) => {
@@ -16,7 +17,6 @@ export const createUser: RequestHandler = async (req, res) => {
       rgResponsavel: req.body.rg_resp ?? req.body.rgResponsavel,
     };
 
-    // 🔹 Validação
     const validation = createUserSchema.safeParse(formattedBody);
     if (!validation.success) {
       return res.status(StatusCodes.BAD_REQUEST).json({
@@ -28,17 +28,17 @@ export const createUser: RequestHandler = async (req, res) => {
     const data = validation.data;
 
 
-    // 🔹 Criptografa senha
     const hashedPassword = await bcrypt.hash(data.password, 12);
 
-    // 🔹 Monta objeto para Prisma
     const userDatas = {
       ...data,
       password: hashedPassword,
     };
 
-    // 🔹 Salva no banco
     await prisma.user.create({ data: userDatas });
+
+    // Invalida cache APÓS criar com sucesso
+    await redisCache.invalidate('cache:users');
 
     return res.status(StatusCodes.CREATED).json({
       message: "Usuário criado com sucesso",

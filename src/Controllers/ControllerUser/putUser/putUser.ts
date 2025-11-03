@@ -1,6 +1,7 @@
 import { RequestHandler } from "express";
 import { StatusCodes } from "http-status-codes";
 import prisma from "../../../prisma";
+import { redisCache } from "../../../shared/redisCacheProvider";
 
 
 
@@ -16,6 +17,10 @@ export const putUser: RequestHandler = async (req, res) => {
           where: { email: req.body.email },
           data: req.body,
         });
+
+        // Invalida caches relacionados APÓS atualizar
+        await redisCache.invalidate('cache:users');
+        await redisCache.invalidate(`cache:user:${req.body.email}`);
     
         return res.status(200).json({
           message: "Usuário alterado com sucesso"

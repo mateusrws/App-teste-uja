@@ -36,6 +36,10 @@ export const Login: RequestHandler = async (req, res) => {
                     message: 'Erro ao gerar token de acesso'
                 })
             }
+
+            req.session.userId = User.id;
+            req.session.email = User.email;
+            req.session.isLogged = true;
             
             return res.status(200).json({
                 message: "Login realizado com sucesso",

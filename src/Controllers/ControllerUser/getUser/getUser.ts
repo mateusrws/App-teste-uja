@@ -1,30 +1,80 @@
 import { RequestHandler } from "express";
 import { StatusCodes } from "http-status-codes";
 import prisma from "../../../prisma";
+import { redisCache } from "../../../shared/redisCacheProvider";
 
 
 export const getUsers: RequestHandler = async (req,res) => {
     try {
+        // Verifica se existe cache antes de buscar no banco
+        const cached = await redisCache.recover('cache:users');
         
-        const users = await prisma.user.findMany()
+        if (cached) {
+            return res.status(StatusCodes.ACCEPTED).json({ 
+                message: "Usuarios encontrados (cache)", 
+                users: cached 
+            });
+        }
 
-        res.status(StatusCodes.ACCEPTED).json({ message: "Usuarios encontrados", users})
+        // Se não tem cache, busca no banco
+        const users = await prisma.user.findMany();
 
+        // Salva no cache (TTL de 5 minutos)
+        await redisCache.save('cache:users', users, 300);
+
+        res.status(StatusCodes.ACCEPTED).json({ 
+            message: "Usuarios encontrados", 
+            users 
+        });
     } catch (error) {
-        res.status(StatusCodes.BAD_REQUEST).json({ message: "Ocorreu um erro ao procurar usuário" , error})
+        res.status(StatusCodes.BAD_REQUEST).json({ 
+            message: "Ocorreu um erro ao procurar usuário", 
+            error 
+        });
     }
 }
 
 export const getUserByEmail: RequestHandler = async (req, res) =>{
     try {
+        const { email } = req.params || req.body;
+
+        if (!email) {
+            return res.status(StatusCodes.BAD_REQUEST).json({
+                message: "Email não fornecido"
+            });
+        }
+
+        // Verifica cache para usuário específico
+        const cacheKey = `cache:user:${email}`;
+        const cached = await redisCache.recover(cacheKey);
         
-        const { email } = req.body
+        if (cached) {
+            return res.status(StatusCodes.ACCEPTED).json({ 
+                message: "Usuário encontrado (cache)", 
+                user: cached 
+            });
+        }
 
-        const user = await prisma.user.findUnique({ where: {email}})
+        // Se não tem cache, busca no banco
+        const user = await prisma.user.findUnique({ where: { email } });
 
-        res.status(StatusCodes.ACCEPTED).json({ message: "Usuário encontrado", user})
+        if (!user) {
+            return res.status(StatusCodes.NOT_FOUND).json({
+                message: "Usuário não encontrado"
+            });
+        }
 
+        // Salva no cache (TTL de 5 minutos)
+        await redisCache.save(cacheKey, user, 300);
+
+        res.status(StatusCodes.ACCEPTED).json({ 
+            message: "Usuário encontrado", 
+            user 
+        });
     } catch (error) {
-        res.status(StatusCodes.BAD_REQUEST).json({ message: "Ocorreu um erro ao procurar usuário", error})
+        res.status(StatusCodes.BAD_REQUEST).json({ 
+            message: "Ocorreu um erro ao procurar usuário", 
+            error 
+        });
     }
 }

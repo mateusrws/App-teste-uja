@@ -2,6 +2,7 @@ import { Request, Response } from "express";
 import prisma from "../../../prisma";
 import { z } from "zod";
 import { createEventSchema } from "../../../utils/createEventBodyValidator";
+import { redisCache } from "../../../shared/redisCacheProvider";
 
 export const createEvent = async (req: Request, res: Response) => {
   try {
@@ -33,6 +34,10 @@ export const createEvent = async (req: Request, res: Response) => {
         organizerId: event.organizerId,
       },
     });
+
+    // Invalida caches relacionados APÓS criar com sucesso
+    await redisCache.invalidate('cache:eventos');
+    await redisCache.invalidate(`cache:evento:${event.slug}`);
 
     return res.status(201).json({
       message: "Evento criado com sucesso",

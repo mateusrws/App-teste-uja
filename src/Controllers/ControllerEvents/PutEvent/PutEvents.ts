@@ -1,5 +1,6 @@
 import { RequestHandler } from "express";
 import prisma from "../../../prisma";
+import { redisCache } from "../../../shared/redisCacheProvider";
 
 export const putEvent: RequestHandler = async (req, res) => {
   try {
@@ -13,6 +14,10 @@ export const putEvent: RequestHandler = async (req, res) => {
       where: { slug: req.body.slug },
       data: req.body,
     });
+
+    // Invalida caches relacionados APÓS atualizar
+    await redisCache.invalidate('cache:eventos');
+    await redisCache.invalidate(`cache:evento:${req.body.slug}`);
 
     return res.status(200).json({
       message: "Evento alterado com sucesso",

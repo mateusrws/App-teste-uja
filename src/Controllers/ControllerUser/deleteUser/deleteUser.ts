@@ -1,5 +1,6 @@
 import { RequestHandler } from "express";
 import prisma from "../../../prisma";
+import { redisCache } from "../../../shared/redisCacheProvider";
 
 
 
@@ -18,8 +19,12 @@ export const deleteUser: RequestHandler = async (req, res) =>{
             where: { email }
         })
 
+        // Invalida caches relacionados APÓS deletar
+        await redisCache.invalidate('cache:users');
+        await redisCache.invalidate(`cache:user:${email}`);
+
         res.status(200).json({
-            message: "Evento excluido"
+            message: "Usuário excluído com sucesso"
         })
 
     } catch (error) {
