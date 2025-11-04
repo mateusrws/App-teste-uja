@@ -31,7 +31,7 @@ export const deleteEvent: RequestHandler = async (req, res) =>{
 
     } catch (error) {
         res.status(500).json({
-            error: error
+            message: 'Erro ao deletar evento'
         })
     }
 }

@@ -49,5 +49,11 @@ export const ensureAuthenticate: RequestHandler = async (req, res, next) => {
         message: "Token inválido",
       });
     }
+
+    // Define req.id e req.email quando autentica via JWT
+    if (typeof jwtData !== "string") {
+      req.id = jwtData.uid;
+    }
+
     return next();
   };

@@ -26,8 +26,7 @@ export const getEvents: RequestHandler = async (req, res) => {
     });
   } catch (error) {
     res.status(500).json({
-      message: "Erro ao buscar eventos",
-      error: error instanceof Error ? error.message : error,
+      message: "Erro ao buscar eventos"
     });
   }
 };
@@ -72,8 +71,7 @@ export const getEventsBySlug: RequestHandler = async (req, res) => {
       });
     } catch (error) {
       res.status(500).json({
-        message: "Erro ao buscar evento",
-        error: error instanceof Error ? error.message : error,
+        message: "Erro ao buscar evento"
       });
     }
   };

@@ -44,6 +44,9 @@ export const createEvent = async (req: Request, res: Response) => {
       status: 201,
     });
   } catch (error) {
-    return res.status(400).send(error);
+    console.error("Erro ao criar evento:", error);
+    return res.status(500).json({
+      message: "Erro ao criar evento"
+    });
   }
 };

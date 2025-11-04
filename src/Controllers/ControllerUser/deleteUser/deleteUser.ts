@@ -29,8 +29,7 @@ export const deleteUser: RequestHandler = async (req, res) =>{
 
     } catch (error) {
         res.status(500).json({
-            message: "Erro ao deletar usuário",
-            error
+            message: "Erro ao deletar usuário"
         })
     }
 }

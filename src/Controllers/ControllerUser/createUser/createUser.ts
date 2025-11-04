@@ -8,7 +8,6 @@ import { redisCache } from "../../../shared/redisCacheProvider";
 
 export const createUser: RequestHandler = async (req, res) => {
   try {
-    console.log("BODY RECEBIDO:", req.body);
 
     const formattedBody = {
       ...req.body,
@@ -46,8 +45,7 @@ export const createUser: RequestHandler = async (req, res) => {
   } catch (error) {
     console.error("ERRO AO CRIAR USUÁRIO:", error);
     return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
-      message: "Ocorreu um erro ao criar o usuário",
-      errors: error,
+      message: "Ocorreu um erro ao criar o usuário"
     });
   }
 };

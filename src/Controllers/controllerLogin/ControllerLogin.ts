@@ -4,6 +4,8 @@ import { User } from "../../generated/prisma";
 import { compare  } from 'bcrypt'
 import { JWTService } from "../../services/JWTService";
 import { StatusCodes } from "http-status-codes";
+import { getUserById } from "../ControllerUser/getUser/getUser";
+import { redisCache } from "../../shared/redisCacheProvider";
 
 
 
@@ -40,11 +42,16 @@ export const Login: RequestHandler = async (req, res) => {
             req.session.userId = User.id;
             req.session.email = User.email;
             req.session.isLogged = true;
+
             
-            return res.status(200).json({
-                message: "Login realizado com sucesso",
-                accessToken
-            });
+            const user = await getUserById(req, res, () => {});
+            if(user){
+                await redisCache.save(`cache:user:${User.id}`, user, 300);
+                return res.status(200).json({
+                    message: "Login realizado com sucesso",
+                    accessToken
+                });
+            }
         } else {
             return res.status(401).json({
                 message: "Senha incorreta"

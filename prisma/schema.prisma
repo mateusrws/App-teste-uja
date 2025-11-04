@@ -63,6 +63,7 @@ model Ingresso {
   price   Float
   eventId String
   userId  String
+  isUsed  Boolean @default(false)
 
   event Event @relation("IngressosEvents", fields: [eventId], references: [id])
   user  User  @relation("IngressosUsers", fields: [userId], references: [id])

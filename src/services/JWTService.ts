@@ -9,7 +9,7 @@ const sign = (data:  IJwtdata) => {
     
     if(!process.env.JWT_SECRET) return "JWT_SECRET_NOT_FOUND";
     
-    return jwt.sign(data,process.env.JWT_SECRET, { expiresIn: '48h' })
+    return jwt.sign(data,process.env.JWT_SECRET, { expiresIn: '720h' })
 }
 
 const verify = (token: string): IJwtdata | "INVALID_TOKEN" | "JWT_SECRET_NOT_FOUND" => {

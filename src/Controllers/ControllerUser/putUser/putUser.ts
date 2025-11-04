@@ -28,8 +28,7 @@ export const putUser: RequestHandler = async (req, res) => {
         
       } catch (error) {
         return res.status(500).json({
-          message: "Erro ao alterar usuário",
-          error,
+          message: "Erro ao alterar usuário"
         });
       }
 

@@ -17,7 +17,17 @@ app.use(session({
     client: client,
     prefix: "sess"
   }),
-  secret: process.env.SESSION_SECRET || process.env.JWT_SECRET || 'sdasdibsoadb',
+  secret: (() => {
+    const secret = process.env.SESSION_SECRET || process.env.JWT_SECRET;
+    if (!secret) {
+      if (process.env.NODE_ENV === 'production') {
+        throw new Error('SESSION_SECRET ou JWT_SECRET deve estar configurado em produção');
+      }
+      console.warn('⚠️  SESSION_SECRET não configurado. Usando secret temporário apenas para desenvolvimento.');
+      return 'sdasdibsoadb';
+    }
+    return secret;
+  })(),
   resave: false,
   saveUninitialized: false,
   name: "SessionId",

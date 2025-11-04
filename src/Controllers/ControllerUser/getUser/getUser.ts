@@ -28,35 +28,34 @@ export const getUsers: RequestHandler = async (req,res) => {
         });
     } catch (error) {
         res.status(StatusCodes.BAD_REQUEST).json({ 
-            message: "Ocorreu um erro ao procurar usuário", 
-            error 
+            message: "Ocorreu um erro ao procurar usuário"
         });
     }
 }
 
-export const getUserByEmail: RequestHandler = async (req, res) =>{
+export const getUserById: RequestHandler = async (req, res) => {
     try {
-        const { email } = req.params || req.body;
+        const { slug } = req.params || req.body; 
 
-        if (!email) {
+        if (!slug) {
             return res.status(StatusCodes.BAD_REQUEST).json({
-                message: "Email não fornecido"
+                message: "ID não fornecido"
             });
         }
 
-        // Verifica cache para usuário específico
-        const cacheKey = `cache:user:${email}`;
-        const cached = await redisCache.recover(cacheKey);
         
+        const cacheKey = `cache:user:${slug}`;
+        const cached = await redisCache.recover(cacheKey);
+
         if (cached) {
-            return res.status(StatusCodes.ACCEPTED).json({ 
-                message: "Usuário encontrado (cache)", 
-                user: cached 
+            return res.status(StatusCodes.ACCEPTED).json({
+                message: "Usuário encontrado (cache)",
+                user: cached
             });
         }
 
-        // Se não tem cache, busca no banco
-        const user = await prisma.user.findUnique({ where: { email } });
+       
+        const user = await prisma.user.findUnique({ where: { id: slug } });
 
         if (!user) {
             return res.status(StatusCodes.NOT_FOUND).json({
@@ -64,17 +63,15 @@ export const getUserByEmail: RequestHandler = async (req, res) =>{
             });
         }
 
-        // Salva no cache (TTL de 5 minutos)
         await redisCache.save(cacheKey, user, 300);
 
-        res.status(StatusCodes.ACCEPTED).json({ 
-            message: "Usuário encontrado", 
-            user 
+        res.status(StatusCodes.ACCEPTED).json({
+            message: "Usuário encontrado",
+            user
         });
     } catch (error) {
-        res.status(StatusCodes.BAD_REQUEST).json({ 
-            message: "Ocorreu um erro ao procurar usuário", 
-            error 
+        res.status(StatusCodes.BAD_REQUEST).json({
+            message: "Ocorreu um erro ao procurar usuário"
         });
     }
 }
