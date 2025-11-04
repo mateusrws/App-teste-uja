@@ -8,50 +8,55 @@ import { JWTService } from '../../services/JWTService';
 
 export const deletePass: RequestHandler = async (req, res) => {
     try {
-        const { id } = req.params;
 
-        if (!id) {
-            return res.status(StatusCodes.BAD_REQUEST).json({
-                message: 'ID não foi enviado'
-            });
+        const id = req.params.id
+
+        if(!id){
+            return res.status(StatusCodes.NO_CONTENT).json({
+                message: "ID do ingresso não fornecido"
+            })
         }
 
-        // Valida UUID
-        const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-        if (!uuidRegex.test(id)) {
-            return res.status(StatusCodes.BAD_REQUEST).json({
-                message: 'ID inválido'
-            });
-        }
-
-        // Obtém userId do req.id (sessão) ou do JWT
-        let userId: string | undefined = req.id;
+        let userId: string | undefined = req.session.userId;
         
         if (!userId) {
             const { authorization } = req.headers;
-            if (authorization) {
-                const [type, token] = authorization.split(" ");
-                if (type === "Bearer" && token) {
-                    const decoded = JWTService.verify(token);
-                    if (decoded !== "INVALID_TOKEN" && decoded !== "JWT_SECRET_NOT_FOUND" && typeof decoded !== "string") {
-                        userId = decoded.uid;
-                    }
-                }
+            if (!authorization) {
+                return res.status(StatusCodes.UNAUTHORIZED).json({
+                    message: "Token de autorização não fornecido",
+                });
             }
-        }
 
-        if (!userId) {
+            const [type, token] = authorization.split(" ");
+            if (type !== "Bearer" || !token) {
+                return res.status(StatusCodes.UNAUTHORIZED).json({
+                    message: "Formato de token inválido",
+                });
+            }
+
+            const decoded = JWTService.verify(token);
+            if (decoded === "INVALID_TOKEN" || decoded === "JWT_SECRET_NOT_FOUND") {
+                return res.status(StatusCodes.UNAUTHORIZED).json({
+                    message: "Token inválido",
+                });
+            }
+
+            userId = typeof decoded === "string" ? undefined : decoded.uid;
+        }
+        
+        const user = await prisma.user.findUnique({where: { id }})
+
+        if (!user) {
             return res.status(StatusCodes.UNAUTHORIZED).json({
                 message: "Usuário não identificado"
             });
         }
 
-        // Verifica se o ingresso existe e pertence ao usuário
-        const passExist = await prisma.ingresso.findFirst({
+        const pass = await prisma.ingresso.findFirst({
             where: { id, userId },
         });
 
-        if (!passExist) {
+        if (!pass) {
             return res.status(StatusCodes.NOT_FOUND).json({
                 message: "Ingresso não encontrado ou você não tem permissão para deletá-lo"
             });

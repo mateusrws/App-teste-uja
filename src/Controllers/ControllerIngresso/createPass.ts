@@ -21,21 +21,31 @@ export const createPass: RequestHandler = async (req, res) =>{
         const data = validation.data;
 
         // Valida autorização: usuário só pode criar ingresso para si mesmo (ou usar req.id se disponível)
-        let userId: string | undefined = req.id;
+        let userId: string | undefined = req.session.userId;
         
         if (!userId) {
             const { authorization } = req.headers;
             if (!authorization) {
-                userId = req.session.userId
-            }else{
-                const [type, token] = authorization.split(" ");
-                if (type === "Bearer" && token) {
-                    const decoded = JWTService.verify(token);
-                    if (decoded !== "INVALID_TOKEN" && decoded !== "JWT_SECRET_NOT_FOUND" && typeof decoded !== "string") {
-                        userId = decoded.uid;
-                    }
-                }
+                return res.status(StatusCodes.UNAUTHORIZED).json({
+                    message: "Token de autorização não fornecido",
+                });
             }
+
+            const [type, token] = authorization.split(" ");
+            if (type !== "Bearer" || !token) {
+                return res.status(StatusCodes.UNAUTHORIZED).json({
+                    message: "Formato de token inválido",
+                });
+            }
+
+            const decoded = JWTService.verify(token);
+            if (decoded === "INVALID_TOKEN" || decoded === "JWT_SECRET_NOT_FOUND") {
+                return res.status(StatusCodes.UNAUTHORIZED).json({
+                    message: "Token inválido",
+                });
+            }
+
+            userId = typeof decoded === "string" ? undefined : decoded.uid;
         }
 
         // Se userId foi identificado, garante que o ingresso pertence ao usuário

@@ -50,7 +50,7 @@ router.delete('/user', ensureAuthenticate, ensureCoord);
 router.post('/logout', ensureIsLogged, Logout);
 
 // Rotas de Ingresso
-router.get('/ingresso', ensureAuthenticate, getPass);
+router.get('/ingresso', ensureAuthenticate, ensureCoord, getPass);
 router.get('/ingresso/:id', ensureAuthenticate, getPassById);
 router.post('/ingresso', ensureAuthenticate, createPass);
 router.put('/ingresso', ensureAuthenticate, putPass);

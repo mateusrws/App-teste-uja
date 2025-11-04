@@ -15,7 +15,7 @@ export const putPass: RequestHandler = async (req, res) => {
             });
         }
 
-        let userId: string | undefined = req.id;
+        let userId: string | undefined = req.session.userId;
         
         if (!userId) {
             const { authorization } = req.headers;

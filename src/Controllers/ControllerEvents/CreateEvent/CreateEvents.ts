@@ -3,6 +3,7 @@ import prisma from "../../../prisma";
 import { z } from "zod";
 import { createEventSchema } from "../../../utils/createEventBodyValidator";
 import { redisCache } from "../../../shared/redisCacheProvider";
+import { StatusCodes } from "http-status-codes";
 
 export const createEvent = async (req: Request, res: Response) => {
   try {
@@ -17,6 +18,12 @@ export const createEvent = async (req: Request, res: Response) => {
           issues: error.issues, 
         });
       }
+    }
+    
+    if(event.organizerId !== req.session.userId){
+      return res.status(StatusCodes.UNAUTHORIZED).json({
+        message: 'Não autorizado'
+      })
     }
 
     await prisma.event.create({

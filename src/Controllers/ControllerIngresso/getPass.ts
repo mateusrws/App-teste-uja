@@ -30,23 +30,34 @@ export const getPass: RequestHandler = async (req, res) => {
 
 export const getPassById: RequestHandler = async (req, res) => {
     try {
-        let id = req.params;
-        const { authorization } = req.headers
-
-        if (!id) {
-            if(!req.session.userId){
-                const [type, token] = authorization.split(" ");
-                if (type === "Bearer" && token) {
-                    const decoded = JWTService.verify(token);
-                    if (decoded !== "INVALID_TOKEN" && decoded !== "JWT_SECRET_NOT_FOUND" && typeof decoded !== "string") {
-                        id = decoded.uid;
-                    }
-                }
+        let userId: string | undefined = req.session.userId;
+        
+        if (!userId) {
+            const { authorization } = req.headers;
+            if (!authorization) {
+                return res.status(StatusCodes.UNAUTHORIZED).json({
+                    message: "Token de autorização não fornecido",
+                });
             }
-            let id = req.session.userId
+
+            const [type, token] = authorization.split(" ");
+            if (type !== "Bearer" || !token) {
+                return res.status(StatusCodes.UNAUTHORIZED).json({
+                    message: "Formato de token inválido",
+                });
+            }
+
+            const decoded = JWTService.verify(token);
+            if (decoded === "INVALID_TOKEN" || decoded === "JWT_SECRET_NOT_FOUND") {
+                return res.status(StatusCodes.UNAUTHORIZED).json({
+                    message: "Token inválido",
+                });
+            }
+
+            userId = typeof decoded === "string" ? undefined : decoded.uid;
         }
 
-        const pass = await prisma.ingresso.findUnique({ where: { id } });
+        const pass = await prisma.ingresso.findUnique({ where: { id: userId } });
 
         if (!pass) {
             return res.status(StatusCodes.NOT_FOUND).json({
