@@ -13,7 +13,14 @@ export const Logout: RequestHandler = async (req, res) => {
             }
         })
 
-        res.clearCookie('sessionId');
+        res.clearCookie(req.sessionID);
+        req.session.destroy((e) => {
+            if(e){
+                return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+                    message: 'Erro ao destruir sessão'
+                })
+            }
+        })
 
         res.status(StatusCodes.OK).json({
             message: 'Logout realizado com sucesso'

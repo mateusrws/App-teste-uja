@@ -14,8 +14,7 @@ export const createEvent = async (req: Request, res: Response) => {
     } catch (error) {
       if (error instanceof z.ZodError) {
         return res.status(400).json({
-          message: "Erro de validação nos campos",
-          issues: error.issues, 
+          message: "Erro de validação nos campos"
         });
       }
     }

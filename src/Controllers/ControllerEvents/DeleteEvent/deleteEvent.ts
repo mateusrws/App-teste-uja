@@ -71,7 +71,7 @@ export const deleteEvent: RequestHandler = async (req, res) =>{
         await redisCache.invalidate('cache:eventos');
         await redisCache.invalidate(`cache:evento:${slug}`);
 
-        await prisma.event.delete({ where: { organizerId: userId } })
+        await prisma.event.delete({ where: { slug } })
 
 
         res.status(200).json({

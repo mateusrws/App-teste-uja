@@ -17,6 +17,10 @@ import { getPass, getPassById } from './Controllers/ControllerIngresso/getPass';
 import { createPass } from './Controllers/ControllerIngresso/createPass';
 import { putPass } from './Controllers/ControllerIngresso/putPass';
 import { deletePass } from './Controllers/ControllerIngresso/deletePass';
+import { isLogged } from './middleware/isLogged';
+import { deleteUser } from './Controllers/ControllerUser/deleteUser/deleteUser';
+import { createCong } from './Controllers/ControllerCongregação/createCong';
+import { getCongs } from './Controllers/ControllerCongregação/getCong';
 
 const router = Router();
 
@@ -34,29 +38,32 @@ router.post('/user', ensureCoord, ifCreateAdolescente, createUser);
 router.get('/', ensureAuthenticate, ControllerRotas.raiz);
 
 // Rotas de Eventos
-router.post('/events', ensureAuthenticate, ensureCoord, createEvent);
-router.get('/events', ensureAuthenticate, getEvents);
-router.get('/events/:slug', ensureAuthenticate, getEventsBySlug);
-router.put('/events', ensureAuthenticate, ensureCoord, putEvent);
-router.delete('/events/:slug', ensureAuthenticate, ensureCoord, deleteEvent);
+router.post('/events', ensureAuthenticate, isLogged, ensureCoord, createEvent);
+router.get('/events', ensureAuthenticate, isLogged , getEvents);
+router.get('/events/:slug', ensureAuthenticate, isLogged , getEventsBySlug);
+router.put('/events', ensureAuthenticate, isLogged, ensureCoord, putEvent);
+router.delete('/events/:slug', ensureAuthenticate, isLogged, ensureCoord, deleteEvent);
 
 // Rotas de Usuários
-router.get('/user', ensureAuthenticate, getUsers);
-router.get('/user/:slug', ensureAuthenticate, getUserById);
-router.put('/user', ensureAuthenticate, ensureCoord, putUser);
-router.delete('/user', ensureAuthenticate, ensureCoord);
+router.get('/user', ensureAuthenticate, isLogged , getUsers);
+router.get('/user/:slug', ensureAuthenticate, isLogged , getUserById);
+router.put('/user', ensureAuthenticate,isLogged ,ensureCoord  , putUser);
+router.delete('/user', ensureAuthenticate, isLogged , ensureCoord, deleteUser);
 
 /// Rota de Logout
 router.post('/logout', ensureIsLogged, Logout);
 
 // Rotas de Ingresso
-router.get('/ingresso', ensureAuthenticate, ensureCoord, getPass);
+router.get('/ingresso', ensureAuthenticate, isLogged,ensureCoord , getPass);
 router.get('/ingresso/:id', ensureAuthenticate, getPassById);
-router.post('/ingresso', ensureAuthenticate, createPass);
-router.put('/ingresso', ensureAuthenticate, putPass);
-router.delete('/ingresso/:id', ensureAuthenticate, deletePass);
+router.post('/ingresso', ensureAuthenticate, isLogged , createPass);
+router.put('/ingresso', ensureAuthenticate, isLogged , putPass);
+router.delete('/ingresso/:id', ensureAuthenticate, isLogged , deletePass);
 
+// Rotas de Congregação
 
+router.get('/cong', ensureAuthenticate, isLogged, getCongs)
+router.post('/cong', ensureAuthenticate, isLogged, ensureCoord,  createCong)
 
 
 export default router;

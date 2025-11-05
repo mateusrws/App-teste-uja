@@ -26,6 +26,13 @@ export const createUser: RequestHandler = async (req, res) => {
 
     const data = validation.data;
 
+    
+    const user = await prisma.user.findFirst({ where: { email: data.email } });
+    if(user){
+      return res.status(StatusCodes.BAD_REQUEST).json({
+        message: "Usuário já existe",
+      });
+    }
 
     const hashedPassword = await bcrypt.hash(data.password, 12);
 
@@ -34,6 +41,8 @@ export const createUser: RequestHandler = async (req, res) => {
       password: hashedPassword,
     };
 
+
+    
     await prisma.user.create({ data: userDatas });
 
     // Invalida cache APÓS criar com sucesso

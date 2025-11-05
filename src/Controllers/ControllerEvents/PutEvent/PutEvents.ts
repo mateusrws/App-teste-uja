@@ -18,23 +18,37 @@ export const putEvent: RequestHandler = async (req, res) => {
     
     if (!validation.success) {
       return res.status(StatusCodes.BAD_REQUEST).json({
-        message: "Erro de validação dos dados",
-        errors: validation.error.issues,
+        message: "Erro de validação dos dados"
       });
     }
 
-    const updated = await prisma.event.update({
+    const event = await prisma.event.findUnique({ where: { slug: req.body.slug } });
+    if(!event){
+      return res.status(StatusCodes.NOT_FOUND).json({
+        message: "Evento não encontrado",
+      });
+    }
+
+    if(event.organizerId !== req.session.userId){
+      return res.status(StatusCodes.UNAUTHORIZED).json({
+        message: "Não autorizado",
+      });
+    }
+
+    await prisma.event.update({
       where: { slug: req.body.slug },
-      data: validation.data,
-    });
+      data: {
+        ...validation.data,
+        organizerId: event.organizerId,
+    },
+  });
 
     // Invalida caches relacionados APÓS atualizar
     await redisCache.invalidate('cache:eventos');
     await redisCache.invalidate(`cache:evento:${req.body.slug}`);
 
     return res.status(StatusCodes.OK).json({
-      message: "Evento alterado com sucesso",
-      event: updated,
+      message: "Evento alterado com sucesso"
     });
     
   } catch (error) {

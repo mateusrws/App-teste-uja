@@ -13,6 +13,12 @@ export const Login: RequestHandler = async (req, res) => {
 
     try {
         
+        if(req.session.isLogged){
+            return res.status(400).json({
+                message: "Usuário já está logado"
+            })
+        }
+
         const { email, password, } = req.body
 
         if(!email || !password){
