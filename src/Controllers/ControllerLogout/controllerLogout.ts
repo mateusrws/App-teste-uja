@@ -26,6 +26,7 @@ export const Logout: RequestHandler = async (req, res) => {
             message: 'Logout realizado com sucesso'
         })
     } catch (error) {
+        console.log(error)
         res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
             message:  "Erro ao fazer logout",
             error: error

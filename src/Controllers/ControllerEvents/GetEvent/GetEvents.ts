@@ -25,6 +25,7 @@ export const getEvents: RequestHandler = async (req, res) => {
       events,
     });
   } catch (error) {
+    console.log(error)
     res.status(500).json({
       message: "Erro ao buscar eventos"
     });
@@ -70,6 +71,7 @@ export const getEventsBySlug: RequestHandler = async (req, res) => {
         data: event,
       });
     } catch (error) {
+      console.log(error)
       res.status(500).json({
         message: "Erro ao buscar evento"
       });
